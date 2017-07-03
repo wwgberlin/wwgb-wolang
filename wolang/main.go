@@ -4,6 +4,35 @@ import (
 	"fmt"
 )
 
+type extfuncdef struct {
+	name           string
+	implementation func(args []interface{}) (interface{}, error)
+}
+
+func (fd extfuncdef) Name() string {
+	return fd.name
+}
+
+func (fd extfuncdef) Call(args []interface{}) (interface{}, error) {
+	return fd.implementation(args)
+}
+
+type callable interface {
+	Name() string
+	Call(args []interface{}) (interface{}, error)
+}
+
+var extendedFunctions map[string]callable = map[string]callable{
+	plus2.Name(): plus2,
+}
+
+var plus2 extfuncdef = extfuncdef{
+	"plus2",
+	func(terms []interface{}) (result interface{}, err error) {
+		return 99, nil
+	},
+}
+
 func plus(terms []interface{}) (result interface{}, err error) {
 	result = int(0)
 
@@ -45,6 +74,10 @@ func eval(expr interface{}) (result interface{}, err error) {
 func evalFCall(expr []interface{}) (interface{}, error) {
 	funcName := expr[0].(string)
 	arguments := expr[1:]
+
+	if extendedFunctions[funcName] != nil {
+		return extendedFunctions[funcName].Call(arguments)
+	}
 
 	switch funcName {
 	case "+":
@@ -98,4 +131,11 @@ func main() {
 	expr5 := []interface{}{"minus", 5, 2}
 	result5, err5 := eval(expr5)
 	fmt.Println(result5, err5)
+
+	//
+	// call an extended function
+	//
+	expr6 := []interface{}{"plus2", 5, 2}
+	result6, err6 := eval(expr6)
+	fmt.Println(result6, err6)
 }
