@@ -1,4 +1,4 @@
-package main
+package wolang
 
 type extfuncdef struct {
 	name           string
