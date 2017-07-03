@@ -4,61 +4,6 @@ import (
 	"fmt"
 )
 
-type extfuncdef struct {
-	name           string
-	implementation func(args []interface{}) (interface{}, error)
-}
-
-func (fd extfuncdef) Name() string {
-	return fd.name
-}
-
-func (fd extfuncdef) Call(args []interface{}) (interface{}, error) {
-	return fd.implementation(args)
-}
-
-type callable interface {
-	Name() string
-	Call(args []interface{}) (interface{}, error)
-}
-
-var extendedFunctions map[string]callable = map[string]callable{
-	plus2.Name(): plus2,
-}
-
-var plus2 extfuncdef = extfuncdef{
-	"plus2",
-	func(terms []interface{}) (result interface{}, err error) {
-		return 99, nil
-	},
-}
-
-func plus(terms []interface{}) (result interface{}, err error) {
-	result = int(0)
-
-	for _, v := range terms {
-		if val, ok := v.(int); !ok {
-			return nil, fmt.Errorf("error: '%v' is not a number I can add!", v)
-		} else {
-			result = result.(int) + val
-		}
-	}
-	return result, nil
-}
-
-func strconcat(subs []interface{}) (result interface{}, err error) {
-	result = ""
-
-	for _, s := range subs {
-		if substr, ok := s.(string); !ok {
-			return nil, fmt.Errorf("error: '%v' is not a string I can concat!", s)
-		} else {
-			result = result.(string) + substr
-		}
-	}
-	return result, nil
-}
-
 func eval(expr interface{}) (result interface{}, err error) {
 	switch v := expr.(type) {
 	case string:
@@ -135,7 +80,7 @@ func main() {
 	//
 	// call an extended function
 	//
-	expr6 := []interface{}{"plus2", 5, 2}
+	expr6 := []interface{}{"always99", 5, 2}
 	result6, err6 := eval(expr6)
 	fmt.Println(result6, err6)
 }
