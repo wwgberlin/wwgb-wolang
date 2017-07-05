@@ -1,30 +1,25 @@
 package wolang
 
-type extfuncdef struct {
-	name           string
-	implementation func(args []interface{}) (interface{}, error)
+type ExtFuncDef struct {
+	FuncName       string
+	Implementation func(args []interface{}) (interface{}, error)
 }
 
-func (fd extfuncdef) Name() string {
-	return fd.name
+func (fd ExtFuncDef) Name() string {
+	return fd.FuncName
 }
 
-func (fd extfuncdef) Call(args []interface{}) (interface{}, error) {
-	return fd.implementation(args)
+func (fd ExtFuncDef) Call(args []interface{}) (interface{}, error) {
+	return fd.Implementation(args)
 }
 
-type callable interface {
+type Callable interface {
 	Name() string
 	Call(args []interface{}) (interface{}, error)
 }
 
-var extendedFunctions map[string]callable = map[string]callable{
-	always99.Name(): always99,
-}
+var extendedFunctions map[string]Callable = map[string]Callable{}
 
-var always99 extfuncdef = extfuncdef{
-	"always99",
-	func(terms []interface{}) (result interface{}, err error) {
-		return 99, nil
-	},
+func RegExtFunc(ef Callable) {
+	extendedFunctions[ef.Name()] = ef
 }

@@ -53,6 +53,15 @@ func main() {
 	//
 	// call an extended function
 	//
+
+	var always99 wolang.ExtFuncDef = wolang.ExtFuncDef{
+		"always99",
+		func(terms []interface{}) (result interface{}, err error) {
+			return 99, nil
+		},
+	}
+	wolang.RegExtFunc(always99)
+
 	expr6 := []interface{}{"always99", 5, 2}
 	result6, err6 := wolang.Eval(expr6)
 	fmt.Println(result6, err6)
