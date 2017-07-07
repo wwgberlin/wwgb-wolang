@@ -24,6 +24,16 @@ func evalFCall(expr []interface{}) (interface{}, error) {
 		return extendedFunctions[funcName].Call(arguments)
 	}
 
+	for ind, arg := range arguments {
+		if argarray, ok := arg.([]interface{}); ok {
+			nestresult, err := evalFCall(argarray)
+			if err != nil {
+				fmt.Printf("error: Nested function '%s' evaluation failed", arg)
+			}
+			arguments[ind] = nestresult
+		}
+	}
+
 	switch funcName {
 	case "+":
 		return plus(arguments)

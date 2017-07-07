@@ -61,8 +61,15 @@ func main() {
 		},
 	}
 	wolang.RegExtFunc(always99)
-
 	expr6 := []interface{}{"always99", 5, 2}
 	result6, err6 := wolang.Eval(expr6)
 	fmt.Println(result6, err6)
+
+	//
+	// evaluate a nested expression
+	//
+
+	nestedExpr := []interface{}{"+", 3, 4, []interface{}{"+", 5, 6}}
+	result7, err7 := wolang.Eval(nestedExpr)
+	fmt.Println(result7, err7)
 }
