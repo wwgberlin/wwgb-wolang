@@ -1,75 +1,52 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/julianbachiller/wwgb-wolang/wolang"
 )
 
 func main() {
 
-	//
-	// concatenate strings
-	//
+	var result interface{}
+	var parsed interface{}
 
-	expr1 := []interface{}{"concat", "a", "b", "cde"}
-	result1, err1 := wolang.Eval(expr1)
-	fmt.Println(result1, err1)
+	var unparsed string
 
-	//
-	// add numbers
-	//
-	expr2 := []interface{}{"+", 1, 2, 7, 7}
-	result2, err2 := wolang.Eval(expr2)
-	fmt.Println(result2, err2)
+	var err error
 
-	//
-	// cause an error in concat
-	//
-	expr3 := []interface{}{"concat", "a", "b", 17}
-	result3, err3 := wolang.Eval(expr3)
-	fmt.Println(result3, err3)
+	reader := bufio.NewReader(os.Stdin)
 
-	//
-	// cause an error in add
-	//
-	expr4 := []interface{}{"+", 1, 2, true}
-	result4, err4 := wolang.Eval(expr4)
-	fmt.Println(result4, err4)
+	for true {
+		fmt.Print("wolang> ")
+		if input, readErr := reader.ReadString('\n'); readErr != nil {
+			panic(readErr.Error())
+		} else {
+			// Remove trailing newline chars \n and \r for Win. compat
+			unparsed = strings.TrimSuffix(strings.TrimSuffix(input, "\n"), "\r")
 
-	// evaluate a single string
-	fmt.Println(wolang.Eval("hi there"))
+			// Parse and eval until no more input
+			for len(unparsed) > 0 {
+				unparsed, parsed, err = wolang.Parse(unparsed)
+				if err != nil {
+					// Display error and break to main eval loop
+					fmt.Println(err.Error())
+					break
+				}
 
-	// evaluate a single number
-	fmt.Println(wolang.Eval(27))
+				result, err = wolang.Eval(parsed)
+				if err != nil {
+					// Display error and break to main eval loop
+					fmt.Println(err.Error())
+					break
+				}
 
-	//
-	// cause an error because of calling undefined function
-	//
-	expr5 := []interface{}{"minus", 5, 2}
-	result5, err5 := wolang.Eval(expr5)
-	fmt.Println(result5, err5)
-
-	//
-	// call an extended function
-	//
-
-	var always99 wolang.ExtFuncDef = wolang.ExtFuncDef{
-		"always99",
-		func(terms []interface{}) (result interface{}, err error) {
-			return 99, nil
-		},
+				// Display result
+				fmt.Println(result)
+			}
+		}
 	}
-	wolang.RegExtFunc(always99)
-	expr6 := []interface{}{"always99", 5, 2}
-	result6, err6 := wolang.Eval(expr6)
-	fmt.Println(result6, err6)
-
-	//
-	// evaluate a nested expression
-	//
-
-	nestedExpr := []interface{}{"+", 3, 4, []interface{}{"+", 5, 6}}
-	result7, err7 := wolang.Eval(nestedExpr)
-	fmt.Println(result7, err7)
 }
