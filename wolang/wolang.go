@@ -20,10 +20,6 @@ func evalFCall(expr []interface{}) (interface{}, error) {
 	funcName := expr[0].(string)
 	arguments := expr[1:]
 
-	if extendedFunctions[funcName] != nil {
-		return extendedFunctions[funcName].Call(arguments)
-	}
-
 	for ind, arg := range arguments {
 		if argarray, ok := arg.([]interface{}); ok {
 			nestresult, err := evalFCall(argarray)
@@ -32,6 +28,10 @@ func evalFCall(expr []interface{}) (interface{}, error) {
 			}
 			arguments[ind] = nestresult
 		}
+	}
+
+	if extendedFunctions[funcName] != nil {
+		return extendedFunctions[funcName].Call(arguments)
 	}
 
 	switch funcName {
