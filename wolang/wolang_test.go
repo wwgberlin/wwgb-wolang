@@ -15,9 +15,21 @@ func TestEval(t *testing.T) {
 	}, {
 		`(+ 1 2 7 7)`,
 		17,
-		//}, {
-		//	`"hi there!"`,
-		//	"hi there!",
+	}, {
+		`"hi there!"`,
+		"hi there!",
+	}, {
+		`"this string ends with backlash \\"`,
+		`this string ends with backlash \`,
+	}, {
+		`"and this string ends with double quote \""`,
+		`and this string ends with double quote "`,
+	}, {
+		`"hi \ there"`, // <-- this escape behavior is a bit weird, but it'll do for now
+		`hi \ there`,
+	}, {
+		`"hi \\\\ there"`,
+		`hi \\ there`,
 	}, {
 		`27`,
 		27,

@@ -24,9 +24,54 @@ func Parse(input string) (unparsed string, expr interface{}, err error) {
 	} else if input[0] == '(' {
 		// if it opens a bracket parse the expression inside
 		return parseProcCall(input)
+	} else if input[0] == '"' {
+		return parseDoubleQuotedString(input)
 	} else {
 		return parseAtom(input)
 	}
+}
+
+func parseDoubleQuotedString(input string) (unparsed string, expr interface{}, err error) {
+	// skip opening '"'
+	input = input[1:]
+
+	// check for empty double quoted string
+	if input == "\"" {
+		return "", "", nil
+	}
+
+	var dqStr string
+	for p := 0; p < len(input); p++ {
+		if input[p] == '"' {
+			dqStr = input[:p]
+			unparsed = input[p+1:]
+			break
+		}
+
+		// allow to escape a double quote
+		if input[p] == '\\' {
+			if p+1 == len(input) {
+				return unparsed, expr, fmt.Errorf(
+					"illegal escape sequence at the end of %s", input)
+			}
+
+			if input[p+1] == '"' || input[p+1] == '\\' {
+				// skip the escaping backslash
+				input = input[:p] + input[p+1:]
+
+				if p == len(input) {
+					return unparsed, expr, fmt.Errorf(
+						"illegal escape sequence at the end of %s", input)
+				}
+			}
+		}
+	}
+
+	if len(dqStr) == 0 {
+		return "", expr, fmt.Errorf("unterminated double-quoted string: %s", input)
+	}
+
+	return unparsed, dqStr, nil
 }
 
 func parseAtom(input string) (unparsed string, expr interface{}, err error) {
