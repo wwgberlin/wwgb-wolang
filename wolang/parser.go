@@ -2,6 +2,7 @@ package wolang
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -74,6 +75,27 @@ func parseDoubleQuotedString(input string) (unparsed string, expr interface{}, e
 	return unparsed, dqStr, nil
 }
 
+
+func getInteger(atom string) (int, error) {
+	if val, err := strconv.ParseInt(atom, 10, 64); err != nil {
+		return int(0), fmt.Errorf("number out of range: ", atom)
+	} else {
+		return int(val), nil
+	}
+}
+
+func getFloat(atom string) (float64, error) {
+	if val, err := strconv.ParseFloat(atom, 64); err != nil {
+		return float64(0), fmt.Errorf("number out of range: ", atom)
+	} else {
+		return float64(val), nil
+	}
+
+}
+
+var regexFloat *regexp.Regexp = regexp.MustCompile(`^[-+]?([0-9]*\.[0-9]+|[0-9]+)$`)
+var regexInteger *regexp.Regexp = regexp.MustCompile(`^[-+]?[0-9]+$`)
+
 func parseAtom(input string) (unparsed string, expr interface{}, err error) {
 	var atom = ""
 	for p := 0; p < len(input); p++ {
@@ -91,32 +113,21 @@ func parseAtom(input string) (unparsed string, expr interface{}, err error) {
 	// bool expressions
 	if atom == "TRUE" || atom == "true" {
 		return unparsed, true, nil
-	} else if atom == "FALSE" || atom == "false" {
+	}
+	if atom == "FALSE" || atom == "false" {
 		return unparsed, false, nil
-	} else {
-		// numeric expressions
-		val, intErr := strconv.ParseInt(atom, 10, 64)
-		if conversionError, ok := intErr.(*strconv.NumError); ok {
-			if conversionError.Err == strconv.ErrSyntax {
-				valFl, flErr := strconv.ParseFloat(atom, 64)
-				if conversionErrorFl, okFl := flErr.(*strconv.NumError); okFl {
-					if conversionErrorFl.Err == strconv.ErrSyntax {
-						// ...fall out of numeric expr. conditions and fallthrough
+	}
 
-					} else {
-						return unparsed, float64(0), fmt.Errorf("number out of range: ", atom)
-					}
-				} else {
-					return unparsed, float64(valFl), nil
-				}
+	// integer
+	if isInteger := regexInteger.MatchString(atom); isInteger {
+		val, err := getInteger(atom)
+		return unparsed, val, err
+	}
 
-				// ...fall out of numeric expr. conditions and fallthrough
-			} else {
-				return unparsed, int(0), fmt.Errorf("number out of range: ", atom)
-			}
-		} else {
-			return unparsed, int(val), nil
-		}
+	//float
+	if isFloat := regexFloat.MatchString(atom); isFloat {
+		val, err := getFloat(atom)
+		return unparsed, val, err
 	}
 
 	// ...everything else is a string
@@ -135,7 +146,7 @@ func parseProcCall(input string) (unparsed string, expr []interface{}, err error
 		if isWhitespace(input[p]) {
 			continue
 		} else if input[p] == ')' {
-			return input[p+1:], expr, err
+			return input[p + 1:], expr, err
 		} else {
 			remaining, parsedExpr, err := Parse(input[p:])
 			if err != nil {
