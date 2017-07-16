@@ -17,14 +17,17 @@ func Eval(expr interface{}) (result interface{}, err error) {
 }
 
 func evalFCall(expr []interface{}) (interface{}, error) {
-	funcName := expr[0].(string)
+	funcName, isFName := expr[0].(string)
+	if !isFName {
+		return nil, fmt.Errorf("error: Illegal call. %v is not a function name", expr[0])
+	}
 	arguments := expr[1:]
 
 	for ind, arg := range arguments {
 		if argarray, ok := arg.([]interface{}); ok {
 			nestresult, err := evalFCall(argarray)
 			if err != nil {
-				fmt.Printf("error: Nested function '%s' evaluation failed", arg)
+				return nil, fmt.Errorf("error: Nested function '%v' evaluation failed\n%s", arg, err)
 			}
 			arguments[ind] = nestresult
 		}
