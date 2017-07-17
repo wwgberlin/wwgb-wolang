@@ -10,13 +10,13 @@ func TestExtension(t *testing.T) {
 		result interface{}
 	}{{
 		`(always99)`,
-		99,
+		int64(99),
 	}}
 
 	var extensions []ExtFuncDef = []ExtFuncDef{{
 		"always99",
-		func(terms []interface{}) (result interface{}, err error) {
-			return 99, nil
+		func(terms []DataType) (result DataType, err error) {
+			return Integer{99}, nil
 		}},
 	}
 
