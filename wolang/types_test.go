@@ -25,27 +25,12 @@ func TestAddTypeString(t *testing.T) {
 }
 
 func TestAddTypeFloat(t *testing.T) {
-	zero := Float{0}
-	one := Float{1}
-	if res, err := zero.Add(one); err != nil {
+	first := Float{1.7}
+	second := Float{1.3}
+	if res, err := first.Add(second); err != nil {
 		t.Error("Unexpected error", err);
-	} else if res.GetValue().(float64) != 1 {
-		t.Error("Expected res to be", 1, res.GetValue());
+	} else if res.GetValue().(float64) != 3.0 {
+		t.Error("Expected res to be", 3, res.GetValue());
 	}
 }
 
-func TestArrayPush(t *testing.T) {
-	zero := Integer{0}
-	one := Integer{1}
-	arrzero := Array{[]DataType{zero}}
-	if res, err := arrzero.Push(one); err != nil {
-		t.Error("Unexpected error", err);
-	} else {
-		if res.GetValue().([]DataType)[0].GetValue().(int64) != 0 {
-			t.Error("Expected res[0] to be", 0, res.GetValue());
-		}
-		if res.GetValue().([]DataType)[1].GetValue().(int64) != 1 {
-			t.Error("Expected res[1] to be", 1, res.GetValue());
-		}
-	}
-}

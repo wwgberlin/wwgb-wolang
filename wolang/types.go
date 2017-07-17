@@ -69,12 +69,12 @@ func (i Integer) Add(d Addable) (Addable, error) {
 
 func (f Float) Add(d Addable) (Addable, error) {
 	if df, ok := d.(Float); !ok {
-		return nil, fmt.Errorf("cannot add %v to a float", d.GetValue())
+		if di, ok := d.(Integer); !ok {
+			return nil, fmt.Errorf("cannot add %v to a float", d.GetValue())
+		}else{
+			return Float{f.value + float64(di.value)}, nil
+		}
 	} else {
 		return Float{f.value + df.value}, nil
 	}
-}
-
-func (arr Array) Push(d DataType) (DataType, error) {
-	return Array{append(arr.value, d)}, nil
 }
