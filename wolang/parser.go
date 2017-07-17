@@ -8,14 +8,14 @@ import (
 )
 
 func MustParse(input string) (unparsed string, expr interface{}) {
-	u, expr, err := Parse(input)
+	unparsed, expr, err := Parse(input)
 	if err != nil {
 		panic(err.Error())
 	}
-	return u, expr
+	return
 }
 
-func Parse(input string) (unparsed string, expr interface{}, err error) {
+func Parse(input string) (unparsed string, expr DataType, err error) {
 	// remove all whitespace or newline at the beginning
 	input = strings.TrimLeft(input, "\t\r\n ")
 
@@ -24,7 +24,8 @@ func Parse(input string) (unparsed string, expr interface{}, err error) {
 		return unparsed, nil, nil
 	} else if input[0] == '(' {
 		// if it opens a bracket parse the expression inside
-		return parseProcCall(input)
+		unparsed, expr, err := parseProcCall(input)
+		return unparsed, Array{expr}, err
 	} else if input[0] == '"' {
 		return parseDoubleQuotedString(input)
 	} else {
@@ -32,33 +33,33 @@ func Parse(input string) (unparsed string, expr interface{}, err error) {
 	}
 }
 
-func parseDoubleQuotedString(input string) (unparsed string, expr interface{}, err error) {
+func parseDoubleQuotedString(input string) (unparsed string, expr DataType, err error) {
 	// skip opening '"'
 	input = input[1:]
 
 	// check for empty double quoted string
 	if input == "\"" {
-		return "", "", nil
+		return "", String{""}, nil
 	}
 
 	var dqStr string
 	for p := 0; p < len(input); p++ {
 		if input[p] == '"' {
 			dqStr = input[:p]
-			unparsed = input[p+1:]
+			unparsed = input[p + 1:]
 			break
 		}
 
 		// allow to escape a double quote
 		if input[p] == '\\' {
-			if p+1 == len(input) {
+			if p + 1 == len(input) {
 				return unparsed, expr, fmt.Errorf(
 					"illegal escape sequence at the end of %s", input)
 			}
 
-			if input[p+1] == '"' || input[p+1] == '\\' {
+			if input[p + 1] == '"' || input[p + 1] == '\\' {
 				// skip the escaping backslash
-				input = input[:p] + input[p+1:]
+				input = input[:p] + input[p + 1:]
 
 				if p == len(input) {
 					return unparsed, expr, fmt.Errorf(
@@ -72,15 +73,14 @@ func parseDoubleQuotedString(input string) (unparsed string, expr interface{}, e
 		return "", expr, fmt.Errorf("unterminated double-quoted string: %s", input)
 	}
 
-	return unparsed, dqStr, nil
+	return unparsed, String{dqStr}, nil
 }
 
-
-func getInteger(atom string) (int, error) {
+func getInteger(atom string) (int64, error) {
 	if val, err := strconv.ParseInt(atom, 10, 64); err != nil {
-		return int(0), fmt.Errorf("number out of range: ", atom)
+		return int64(0), fmt.Errorf("number out of range: ", atom)
 	} else {
-		return int(val), nil
+		return int64(val), nil
 	}
 }
 
@@ -96,7 +96,7 @@ func getFloat(atom string) (float64, error) {
 var regexFloat *regexp.Regexp = regexp.MustCompile(`^[-+]?([0-9]*\.[0-9]+|[0-9]+)$`)
 var regexInteger *regexp.Regexp = regexp.MustCompile(`^[-+]?[0-9]+$`)
 
-func parseAtom(input string) (unparsed string, expr interface{}, err error) {
+func parseAtom(input string) (unparsed string, expr DataType, err error) {
 	var atom = ""
 	for p := 0; p < len(input); p++ {
 		if isWhitespace(input[p]) || isEndOfAtom(input[p]) {
@@ -112,30 +112,31 @@ func parseAtom(input string) (unparsed string, expr interface{}, err error) {
 
 	// bool expressions
 	if atom == "TRUE" || atom == "true" {
-		return unparsed, true, nil
+		return unparsed, Boolean{true}, nil
 	}
 	if atom == "FALSE" || atom == "false" {
-		return unparsed, false, nil
+		return unparsed, Boolean{false}, nil
 	}
 
+	//TODO: do we need an integer or can we settle for floats always?
 	// integer
 	if isInteger := regexInteger.MatchString(atom); isInteger {
 		val, err := getInteger(atom)
-		return unparsed, val, err
+		return unparsed, Integer{val}, err
 	}
 
 	//float
 	if isFloat := regexFloat.MatchString(atom); isFloat {
 		val, err := getFloat(atom)
-		return unparsed, val, err
+		return unparsed, Float{val}, err
 	}
 
 	// ...everything else is a string
-	return unparsed, string(atom), nil
+	return unparsed, String{string(atom)}, nil
 }
 
-func parseProcCall(input string) (unparsed string, expr []interface{}, err error) {
-	expr = []interface{}{}
+func parseProcCall(input string) (unparsed string, expr []DataType, err error) {
+	expr = []DataType{}
 
 	// skip opening '('
 	input = input[1:]

@@ -4,27 +4,31 @@ import (
 	"fmt"
 )
 
-func plus(terms []interface{}) (result interface{}, err error) {
-	result = int(0)
+func plus(terms []DataType) (result Addable, err error) {
+	result = Integer{0}
 
 	for _, v := range terms {
-		if val, ok := v.(int); !ok {
-			return nil, fmt.Errorf("error: '%v' is not a number I can add!", v)
+		if t, ok := v.(Addable); !ok {
+			return nil, fmt.Errorf("error: '%v' is not a number I can add!", v.GetValue())
 		} else {
-			result = result.(int) + val
+			if result, err = result.Add(t); err != nil {
+				return nil, fmt.Errorf("error: '%v' is not a numeric I can add!", t)
+			}
 		}
 	}
 	return result, nil
 }
 
-func strconcat(subs []interface{}) (result interface{}, err error) {
-	result = ""
+func strconcat(subs []DataType) (result Addable, err error) {
+	result = String{""}
 
 	for _, s := range subs {
-		if substr, ok := s.(string); !ok {
-			return nil, fmt.Errorf("error: '%v' is not a string I can concat!", s)
+		if t, ok := s.(Addable); !ok {
+			return nil, fmt.Errorf("error: '%v' is not a string I can concat!", s.GetValue())
 		} else {
-			result = result.(string) + substr
+			if result, err = result.Add(t); err != nil {
+				return nil, fmt.Errorf("error: '%v' is not a string I can concat!", t)
+			}
 		}
 	}
 	return result, nil
