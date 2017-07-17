@@ -57,11 +57,6 @@ func TestEvalErrors(t *testing.T) {
 		input        string
 		errorMessage string
 	}{
-		//TODO: does this really have to fail?
-		//{
-		//	`(concat a b 17)`,
-		//	"error: '17' is not a string I can concat!",
-		//},
 		{
 			`(+ 1 2 true)`,
 			"error: 'true' is not a number I can add!",
