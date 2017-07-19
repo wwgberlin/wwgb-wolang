@@ -5,21 +5,17 @@ import (
 )
 
 type(
+	DataType interface {
+		GetValue() interface{}
+	}
+
 	Addable interface {
 		DataType
 		Add(d Addable) (Addable, error)
 	}
 
-	DataType interface {
-		GetValue() interface{}
-	}
-
 	Integer struct {
-		value int64
-	}
-
-	Float struct {
-		value float64
+		value int
 	}
 
 	String struct {
@@ -35,16 +31,24 @@ type(
 	}
 )
 
+func NewBoolean(b bool) Boolean{
+	return Boolean{b}
+}
+
+func NewInteger(i int) Integer{
+	return Integer{i}
+}
+
+func NewString(s string) String{
+	return String{s}
+}
+
 func (str String) GetValue() interface{} {
 	return str.value;
 }
 
 func (i Integer) GetValue() interface{} {
 	return i.value;
-}
-
-func (f Float) GetValue() interface{} {
-	return f.value;
 }
 
 func (b Boolean) GetValue() interface{} {
@@ -67,14 +71,3 @@ func (i Integer) Add(d Addable) (Addable, error) {
 	}
 }
 
-func (f Float) Add(d Addable) (Addable, error) {
-	if df, ok := d.(Float); !ok {
-		if di, ok := d.(Integer); !ok {
-			return nil, fmt.Errorf("cannot add %v to a float", d.GetValue())
-		}else{
-			return Float{f.value + float64(di.value)}, nil
-		}
-	} else {
-		return Float{f.value + df.value}, nil
-	}
-}

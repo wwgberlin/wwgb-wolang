@@ -14,7 +14,7 @@ func TestEval(t *testing.T) {
 		"abcde",
 	}, {
 		`(+ 1 2 7 7)`,
-		int64(17),
+		int(17),
 	}, {
 		`"hi there!"`,
 		"hi there!",
@@ -32,10 +32,10 @@ func TestEval(t *testing.T) {
 		`hi \\ there`,
 	}, {
 		`27`,
-		int64(27),
+		int(27),
 	}, {
 		`(+ 3 4 (+ 5 6)))`,
-		int64(18),
+		int(18),
 	}}
 
 	for i, tt := range tests {

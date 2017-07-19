@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func Eval(expr interface{}) (interface{}, error) {
+func Eval(expr DataType) (interface{}, error) {
 	if res, err := eval(expr); err == nil {
 		return res.GetValue(), nil
 	} else {
@@ -12,11 +12,9 @@ func Eval(expr interface{}) (interface{}, error) {
 	}
 }
 
-func eval(expr interface{}) (result DataType, err error) {
+func eval(expr DataType) (result DataType, err error) {
 	switch v := expr.(type) {
 	case String:
-		return v, nil
-	case Float:
 		return v, nil
 	case Integer:
 		return v, nil
@@ -27,6 +25,11 @@ func eval(expr interface{}) (result DataType, err error) {
 }
 
 func evalFCall(expr []DataType) (DataType, error) {
+
+	if len(expr) == 0 {
+		return nil, fmt.Errorf("error: Illegal empty call.")
+	}
+
 	funcName, isFName := expr[0].GetValue().(string)
 	if !isFName {
 		return nil, fmt.Errorf("error: Illegal call. %v is not a function name", expr[0].GetValue())
