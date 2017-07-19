@@ -53,6 +53,8 @@ func run() {
 
 	var result interface{}
 	var parsed DataType
+	var unparsed string
+
 	var input string
 	var err error
 
@@ -64,17 +66,26 @@ func run() {
 		panic(err.Error())
 	}
 
-	_, parsed, err = Parse(strings.TrimSuffix(strings.TrimSuffix(input, "\n"), "\r"))
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
+	// Remove trailing newline chars \n and \r for Win. compat
+	unparsed = strings.TrimSuffix(strings.TrimSuffix(input, "\n"), "\r")
 
-	if result, err = Eval(parsed); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
+	// Parse and eval until no more input
+	for len(unparsed) > 0 {
+		unparsed, parsed, err = Parse(unparsed)
+		if err != nil {
+			// Display error and break to main eval loop
+			fmt.Println(err.Error())
+			break
+		}
 
-	// Display result
-	fmt.Println(result)
+		result, err = Eval(parsed)
+		if err != nil {
+			// Display error and break to main eval loop
+			fmt.Println(err.Error())
+			break
+		}
+
+		// Display result
+		fmt.Println(result)
+	}
 }
