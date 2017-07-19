@@ -5,7 +5,7 @@ import (
 )
 
 func plus(terms []DataType) (result Addable, err error) {
-	result = Float{0}
+	result = Integer{0}
 
 	for _, v := range terms {
 		if t, ok := v.(Addable); !ok {

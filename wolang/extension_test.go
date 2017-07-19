@@ -10,7 +10,7 @@ func TestExtension(t *testing.T) {
 		result interface{}
 	}{{
 		`(always99)`,
-		int64(99),
+		99,
 	}}
 
 	var extensions []ExtFuncDef = []ExtFuncDef{{

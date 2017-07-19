@@ -8,11 +8,11 @@ import (
 )
 
 func MustParse(input string) (unparsed string, expr interface{}) {
-	unparsed, expr, err := Parse(input)
+	u, expr, err := Parse(input)
 	if err != nil {
 		panic(err.Error())
 	}
-	return
+	return u, expr
 }
 
 func Parse(input string) (unparsed string, expr DataType, err error) {
@@ -76,24 +76,14 @@ func parseDoubleQuotedString(input string) (unparsed string, expr DataType, err 
 	return unparsed, String{dqStr}, nil
 }
 
-func getInteger(atom string) (int64, error) {
+func getInteger(atom string) (int, error) {
 	if val, err := strconv.ParseInt(atom, 10, 64); err != nil {
-		return int64(0), fmt.Errorf("number out of range: ", atom)
+		return 0, fmt.Errorf("number out of range: ", atom)
 	} else {
-		return int64(val), nil
+		return int(val), nil
 	}
 }
 
-func getFloat(atom string) (float64, error) {
-	if val, err := strconv.ParseFloat(atom, 64); err != nil {
-		return float64(0), fmt.Errorf("number out of range: ", atom)
-	} else {
-		return float64(val), nil
-	}
-
-}
-
-var regexFloat *regexp.Regexp = regexp.MustCompile(`^[-+]?([0-9]*\.[0-9]+|[0-9]+)$`)
 var regexInteger *regexp.Regexp = regexp.MustCompile(`^[-+]?[0-9]+$`)
 
 func parseAtom(input string) (unparsed string, expr DataType, err error) {
@@ -112,27 +102,20 @@ func parseAtom(input string) (unparsed string, expr DataType, err error) {
 
 	// bool expressions
 	if atom == "TRUE" || atom == "true" {
-		return unparsed, Boolean{true}, nil
+		return unparsed, NewBoolean(true), nil
 	}
 	if atom == "FALSE" || atom == "false" {
-		return unparsed, Boolean{false}, nil
+		return unparsed, NewBoolean(false), nil
 	}
 
-	//TODO: do we need an integer or can we settle for floats always?
 	// integer
 	if isInteger := regexInteger.MatchString(atom); isInteger {
 		val, err := getInteger(atom)
-		return unparsed, Integer{val}, err
-	}
-
-	//float
-	if isFloat := regexFloat.MatchString(atom); isFloat {
-		val, err := getFloat(atom)
-		return unparsed, Float{val}, err
+		return unparsed, NewInteger(val), err
 	}
 
 	// ...everything else is a string
-	return unparsed, String{string(atom)}, nil
+	return unparsed, NewString(string(atom)), nil
 }
 
 func parseProcCall(input string) (unparsed string, expr []DataType, err error) {
